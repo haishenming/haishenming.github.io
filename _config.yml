@@ -148,4 +148,4 @@ theme: huxblog
 deploy:
   type: git
   repo: https://github.com/haishenming/haishenming.github.io
-  branch: gh-pages
+  branch: master
