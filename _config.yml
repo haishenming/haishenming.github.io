@@ -11,7 +11,7 @@ language: zh-cn
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://haishenming.github.io/
+url: http://haishenming.github.io/
 root: ""
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -58,7 +58,7 @@ disqus_username: haishenming
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "我要成为魔法师!"
+sidebar-about-description: "一定要成为很厉害的人！"
 sidebar-avatar: /img/avatar.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
