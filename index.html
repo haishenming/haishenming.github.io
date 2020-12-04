@@ -175,7 +175,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2020-12-04 16:08:59 / Modified: 20:37:17" itemprop="dateCreated datePublished" datetime="2020-12-04T16:08:59+08:00">2020-12-04</time>
+              <time title="Created: 2020-12-04 16:08:59 / Modified: 20:39:59" itemprop="dateCreated datePublished" datetime="2020-12-04T16:08:59+08:00">2020-12-04</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -198,10 +198,19 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <blockquote>
-<p>敬请期待</p>
-</blockquote>
+          <h1 id="计划-——-go-error处理"><a href="#计划-——-go-error处理" class="headerlink" title="计划 —— go error处理"></a>计划 —— go error处理</h1><p>#个人/文章</p>
+<p>Go error的处理方式不同于其他常用语言，一直饱受争议，这篇文章主要是说服大家，go error的处理方式很牛逼以及正确使用go error的姿势。</p>
+<h2 id="go-error-长什么样"><a href="#go-error-长什么样" class="headerlink" title="go error 长什么样"></a>go error 长什么样</h2><p>先来看看go error长什么样</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一个函数返回了错误</span></span><br><span class="line">ret, err := doSomethingErr()</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">	<span class="comment">// 进入到错误处理流程</span></span><br><span class="line">	doSomethineForErr(err)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 无错误，继续正常流程</span></span><br><span class="line">continueTo()</span><br></pre></td></tr></table></figure>
 
+<p>在go中，通过将错误返回的方式来处理错误信息，错误信息可由开发中自行决定如何处理。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The error built-in interface type is the conventional interface for</span></span><br><span class="line"><span class="comment">// representing an error condition, with the nil value representing no error.</span></span><br><span class="line"><span class="keyword">type</span> error <span class="keyword">interface</span> &#123;</span><br><span class="line">	Error() <span class="keyword">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而error在go中，仅仅是一个普通的接口而已。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// because the former will succeed if err wraps an *os.PathError.</span></span><br><span class="line"><span class="keyword">package</span> errors</span><br><span class="line"></span><br><span class="line"><span class="comment">// New returns an error that formats as the given text.</span></span><br><span class="line"><span class="comment">// Each call to New returns a distinct error value even if the text is identical.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">(text <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">// 注意这里返回的是一个地址！！！</span></span><br><span class="line">	<span class="keyword">return</span> &amp;errorString&#123;text&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// errorString is a trivial implementation of error.</span></span><br><span class="line"><span class="keyword">type</span> errorString <span class="keyword">struct</span> &#123;</span><br><span class="line">	s <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *errorString)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> e.s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当我们<code>new</code>一个error时，也只是创建一个error接口的实现，在go中被称为<code>errorString</code>的结构体。</p>
+<h2 id="Error-amp-Exception"><a href="#Error-amp-Exception" class="headerlink" title="Error &amp; Exception"></a>Error &amp; Exception</h2>
       
     </div>
 
