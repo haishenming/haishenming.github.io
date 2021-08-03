@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"xavierx.cn","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="The Hypertext Transfer Protocol (HTTP) is a stateless applicationlevel protocol for distributed, collaborative, hypertext information systems. (RFC7230 2014.6) HTTP协议是一种无状态的、应用层的、以请求&#x2F;应答方式运行的协议，它使用可扩展的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[计算机网络2]我所知道的关于HTTP的一切">
+<meta property="og:url" content="https://xavierx.cn/2020/06/15/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2-%E6%88%91%E6%89%80%E7%9F%A5%E9%81%93%E7%9A%84%E5%85%B3%E4%BA%8EHTTP%E7%9A%84%E4%B8%80%E5%88%87/index.html">
+<meta property="og:site_name" content="Xavier&#39;s Blog">
+<meta property="og:description" content="The Hypertext Transfer Protocol (HTTP) is a stateless applicationlevel protocol for distributed, collaborative, hypertext information systems. (RFC7230 2014.6) HTTP协议是一种无状态的、应用层的、以请求&#x2F;应答方式运行的协议，它使用可扩展的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_process_view.gif">
+<meta property="article:published_time" content="2020-06-15T06:44:49.000Z">
+<meta property="article:modified_time" content="2021-07-16T03:35:26.995Z">
+<meta property="article:author" content="Xavier">
+<meta property="article:tag" content="概念">
+<meta property="article:tag" content="网络">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_process_view.gif">
+
+<link rel="canonical" href="https://xavierx.cn/2020/06/15/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2-%E6%88%91%E6%89%80%E7%9F%A5%E9%81%93%E7%9A%84%E5%85%B3%E4%BA%8EHTTP%E7%9A%84%E4%B8%80%E5%88%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>[计算机网络2]我所知道的关于HTTP的一切 | Xavier's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Xavier's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://xavierx.cn/2020/06/15/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2-%E6%88%91%E6%89%80%E7%9F%A5%E9%81%93%E7%9A%84%E5%85%B3%E4%BA%8EHTTP%E7%9A%84%E4%B8%80%E5%88%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Xavier">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Xavier's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [计算机网络2]我所知道的关于HTTP的一切
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-06-15 14:44:49" itemprop="dateCreated datePublished" datetime="2020-06-15T14:44:49+08:00">2020-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-16 11:35:26" itemprop="dateModified" datetime="2021-07-16T11:35:26+08:00">2021-07-16</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>The Hypertext Transfer Protocol (HTTP) is a stateless applicationlevel protocol for distributed, collaborative, hypertext information systems. (<a href="(https://tools.ietf.org/html/rfc7230)">RFC7230 2014.6</a>)</p>
+<p><strong>HTTP协议</strong>是一种无状态的、应用层的、以请求/应答方式运行的协议，它使用可扩展的语义和自描述消息格式，与基于网络的超文本信息系统灵活的互动。</p>
+<h2 id="浏览器是怎么发起HTTP请求的"><a href="#浏览器是怎么发起HTTP请求的" class="headerlink" title="浏览器是怎么发起HTTP请求的"></a>浏览器是怎么发起HTTP请求的</h2><p>先看一看时序图</p>
+<img  src=http://www.plantuml.com/plantuml/svg/ZL7BJi9G4DttA-uF44rqOLYuqGKcrH1RFw0-5cmCKJw0692NfIKWYJnQ2Y6OGAYQLA0quMUOwUsANx1GWKA2SN6JkPCpvp73H8M7MEGc4XNkOmGDYNRIyFRER7Hh8cIrUVTMY0dNmkCTERtW66Q59e7ZzMYGEF4AdQIkBbdQQQ4YGye4LGLPP5P4Yu7b9qZiQW7atj4-fik7XmTsLmUfjKNl2WO9DaOezZqoLDjKRyvzk8y4DXtGIGcgYWS4VGHcoQuapi9G-u1wVDlusiTqcC6UXfA6cHoCJRkRuq_2TA9WlZspqjDn6wGipt9x7CTwe9cLyOVoczYz7bGIJhmHulamrGVu-RJR3qW5QWnyo1rQoy0U2egY6_WF_MK9rYiMyxz7MWpDh1SSVg5Q3F7dhACPJhqvRtbhNo3WEGdzaHS1aj_JSVd_GMX-05BPetLvg950KtOFusFu0G00>
+
+<h2 id="HTTP消息格式"><a href="#HTTP消息格式" class="headerlink" title="HTTP消息格式"></a>HTTP消息格式</h2><h3 id="一般表达"><a href="#一般表达" class="headerlink" title="一般表达"></a>一般表达</h3><p>请求 request</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># start-line request-line</span><br><span class="line">GET &#x2F; HTTP&#x2F;1.1 \r\n</span><br><span class="line"></span><br><span class="line"># header-field</span><br><span class="line">Host: haishenming.xyz</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"># message-body</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>响应 response</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># start-line status-line</span><br><span class="line">HTTP&#x2F;1.1 200 OK</span><br><span class="line"></span><br><span class="line"># header-field</span><br><span class="line">Connection: keep-alive</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"># message-body</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="ABNF表达-扩充巴科斯-瑙尔范式"><a href="#ABNF表达-扩充巴科斯-瑙尔范式" class="headerlink" title="ABNF表达(扩充巴科斯-瑙尔范式)"></a>ABNF表达(扩充巴科斯-瑙尔范式)</h3><p><strong>ABNF规则介绍</strong></p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%89%A9%E5%85%85%E5%B7%B4%E7%A7%91%E6%96%AF%E8%8C%83%E5%BC%8F#%E6%A0%B8%E5%BF%83%E8%A7%84%E5%88%99">扩充巴科斯范式-维基百科</a></p>
+<p>HTTP-message=<em>start-line</em> *( <em>header-filed</em> CRLF ) CRLF [ <em>message-body</em> ]</p>
+<ul>
+<li><em>start-line</em>=request-line / status-line<ul>
+<li>request-line=method SP resquest-status SP HTTP-version CRLF</li>
+<li>status-line=HTTP-version SP status-code SP reason-phrase CRL</li>
+</ul>
+</li>
+<li><em>header-filed</em>=field-name “:” OWS field-value OWS<ul>
+<li>OWS=*(SP / HTAB)</li>
+<li>field-name=token</li>
+<li>field-value=*(field-content / obs-fold )</li>
+</ul>
+</li>
+<li><em>message-body</em>=*OCTET</li>
+</ul>
+<h2 id="TCP-IP模型"><a href="#TCP-IP模型" class="headerlink" title="TCP/IP模型"></a>TCP/IP模型</h2><p>要讲HTTP，就必须提到TCP/IP。</p>
+<ul>
+<li>应用层<ul>
+<li>HTTP</li>
+<li>SMTP</li>
+<li>Telnet</li>
+<li>FTP</li>
+<li>DNS</li>
+<li>…</li>
+</ul>
+</li>
+<li>传输层<ul>
+<li>TCP</li>
+<li>UDP</li>
+</ul>
+</li>
+<li>网络层<ul>
+<li>IP</li>
+<li>ARP</li>
+</ul>
+</li>
+<li>数据链路层<ul>
+<li>Ethernet</li>
+<li>…</li>
+</ul>
+</li>
+<li>物理层<ul>
+<li>TCP/IP中没有对物理层的描述</li>
+</ul>
+</li>
+</ul>
+<h2 id="HTTP-web架构设计"><a href="#HTTP-web架构设计" class="headerlink" title="HTTP web架构设计"></a>HTTP web架构设计</h2><h3 id="评估Web架构的关键属性"><a href="#评估Web架构的关键属性" class="headerlink" title="评估Web架构的关键属性"></a>评估Web架构的关键属性</h3><ol>
+<li>性能 Performance: 影响高可用的关键因素</li>
+<li>可伸缩性 Scalability: 支持部署可以相互交互的大量组件</li>
+<li>简单性 Simplicity: 容易理解，实现和验证</li>
+<li>可见性 Visiable: 对两个组件间的交互进行监视或者仲裁的能力，如缓存，分层设计等</li>
+<li>可以执行 Portability: 在不同的环境下运行的能力</li>
+<li>可靠性 Reliablity: 出现部分故障时，对整体影响的程度</li>
+<li>可修改性 Modifiability: 对系统作出修改的难易程度，由可进化性，可定制性，可扩展性，可配置性和可重构性组成<ul>
+<li>可进化性 Evolvability: 一个组件单独升级而不影响其他组件</li>
+<li>可扩展性 Extensibility: 向系统添加功能，而不会影响到系统的其他部分</li>
+<li>可定制性 Customizability: 临时性，定制性地修改某一元素来提供服务，部队常规客户产生影响</li>
+<li>可配置性 Configurability: 应用部署后可通过修改配置提供新的功能</li>
+<li>可重用性 Reusability: 组件可以捕捉修改在其他应用中使用</li>
+</ul>
+</li>
+</ol>
+<p>HTTP协议的架构设计应该在上述属性中取得可接受的均衡。</p>
+<h3 id="评估Web架构性能的属性"><a href="#评估Web架构性能的属性" class="headerlink" title="评估Web架构性能的属性"></a>评估Web架构性能的属性</h3><ul>
+<li>网络性能 Network Performance<ul>
+<li>吞吐量 Throughput: 小于等于带宽</li>
+<li>开销 Overhead: 首次开销，每次开销</li>
+</ul>
+</li>
+<li>用户感知到的性能 User-perceived Performance<ul>
+<li>延迟 Latency: 发起请求到接受到响应的时间</li>
+<li>完成时间 Completion: 完成一个应用动作所花费的时间</li>
+</ul>
+</li>
+<li>网络效率 Network Efficiency<ul>
+<li>重用缓存，减少交互次数，数据传输距离，COD</li>
+</ul>
+</li>
+</ul>
+<h3 id="REST-架构"><a href="#REST-架构" class="headerlink" title="REST 架构"></a>REST 架构</h3><p>REST：Representational State Transfer 表现层状态转移</p>
+<p>Resource Representational State Transfer 资源在网络中以某种表现形式进行状态转移</p>
+<p>REST架构最早的出处，来自Roy Fielding的毕业论文，<br><a target="_blank" rel="noopener" href="https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">Architectural Styles and the Design of Network-based Software Architectures</a></p>
+<p><img src="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_process_view.gif"></p>
+<p>图为该论文中所描述的REST架构图</p>
+<h4 id="五种架构风格"><a href="#五种架构风格" class="headerlink" title="五种架构风格"></a>五种架构风格</h4><ul>
+<li>数据流风格 Data-flow<ul>
+<li>简单性</li>
+<li>可进化性</li>
+<li>可扩展性</li>
+<li>可配置性</li>
+<li>可重用性</li>
+</ul>
+</li>
+<li>复制风格 Replication<ul>
+<li>用户可察觉的性能</li>
+<li>可伸缩性</li>
+<li>网络效率</li>
+<li>可靠性</li>
+</ul>
+</li>
+<li>分层风格 Hierarchical<ul>
+<li>简单性</li>
+<li>可进化性</li>
+<li>可伸缩性</li>
+</ul>
+</li>
+<li>移动代码风格 Mobile Code<ul>
+<li>可移植性</li>
+<li>可扩展性</li>
+<li>网络效率</li>
+</ul>
+</li>
+<li>点对点风格 Peer-to-Peer<ul>
+<li>可进化性</li>
+<li>可重用性</li>
+<li>可扩展性</li>
+<li>可配置性</li>
+</ul>
+</li>
+</ul>
+<p>在这里不做详细介绍。</p>
+<h2 id="URI"><a href="#URI" class="headerlink" title="URI"></a>URI</h2><p><strong>URL</strong>: RFC1738(1994.12), Uniform Resource Locator, 表示资源位置，期望提供查找资源的方法。</p>
+<p><strong>URN</strong>: RFC2141(1997.5), Uniform Resource Name, 期望为资源提供持久的，位置无关的标识方式，并允许简单地将多个命名空间映射到单个URN命名空间。</p>
+<p><strong>URI</strong>: RFC1630(1994.6), RFC3986(2005.1)，取代RFC2396和RFC2732， Uniform Resource Identifier, 用以区分资源，是URL和URN的超集，用以渠道URL和URN概念。</p>
+<h3 id="Uniform-Resource-Identifier-统一资源标识符"><a href="#Uniform-Resource-Identifier-统一资源标识符" class="headerlink" title="Uniform Resource Identifier 统一资源标识符"></a>Uniform Resource Identifier 统一资源标识符</h3><p><strong>Resource</strong><br>资源，可以是文档，图片，数据等，也可以是人员，门店，摄像头等现实世界物质在互联网中的抽象。</p>
+<p><strong>Identifier</strong><br>标识符，将当前资源与其他资源区分开的名称。</p>
+<p><strong>Uniform</strong><br>统一，包含几种统一的含义：</p>
+<ol>
+<li>不同资源可以在同一个上下文中出现</li>
+<li>不同的资源标识符可以使用同一种语义进行解读</li>
+<li>引入新标识的时候，不会对已有的标识符产生影响</li>
+<li>允许同一资源标识符在不同的，internet规模下的上下文中出现</li>
+</ol>
+<h3 id="URI组成"><a href="#URI组成" class="headerlink" title="URI组成"></a>URI组成</h3><p><code>scheme://user:password@host:port/path?query1=1&amp;query2=2#fragment</code></p>
+<h3 id="URI的ABNF表达"><a href="#URI的ABNF表达" class="headerlink" title="URI的ABNF表达"></a>URI的ABNF表达</h3><p>URI=<code>scheme</code>“:”<code>hier-part</code>[“?”<code>query</code>][“#”<code>fragment</code>]</p>
+<ul>
+<li>scheme=ALPHA*(ALPHA/DIGIT/“+”/“-“/“.”)<ul>
+<li>http,https,ftp,mailto,rtsp,file,telnet</li>
+</ul>
+</li>
+<li>query=*(pchar/“/“/“?”)</li>
+<li>fragment=*(pchar/“/“/“?”)</li>
+<li>hier-part=”//“authority path-abempty / path-absolute / path-rootless / path-empty<ul>
+<li>authority=[userinfo”@”]host[“:”port]<ul>
+<li>userinfo=*(unreserved / pct-encoded / sub-delims / “:”)</li>
+<li>host=IP-literal / IPv4address / reg-name</li>
+<li>port *DIGIT</li>
+</ul>
+</li>
+<li>path=path-abempty / path-absolute / path-rootless / path-empty / path-noscheme</li>
+</ul>
+</li>
+</ul>
+<h3 id="URI编码"><a href="#URI编码" class="headerlink" title="URI编码"></a>URI编码</h3><p>在数据传递过程中，容易遇到URI保留字符或者存在歧义性字符，因此需要对一些字符进行编码</p>
+<ul>
+<li>不在ASCII码范围内的字符</li>
+<li>ASCII码中不可显示的字符</li>
+<li>URI中规定的保留字</li>
+<li>不安全的字符，如空格，引号，尖括号等。</li>
+</ul>
+<p><strong>保留字符</strong></p>
+<p>reserved = gen-delims / sub-delims</p>
+<ul>
+<li>gen-delims = “:” / “/“ / “?” / “#” / “[“ / “]” / “@”</li>
+<li>sub-delims = “!” / “$” / “&amp;” / “”” / “(“ / “)” / “*” / “+” / “,” / “;” / “=”</li>
+</ul>
+<p><strong>非保留字符</strong></p>
+<p>unreserved = ALPHA / DIGIT / “-“ / “.” / “_” / “~”</p>
+<ul>
+<li>“~”： 有的实现将此认定为保留字符，因此<code>～</code>也需要编码</li>
+</ul>
+<p><strong>URI百分号编码</strong></p>
+<p>pct-encoded = “%” HEXDIG HEXDIG</p>
+<ul>
+<li>US-ASCII: 128个字符</li>
+<li>HEXDIG： 十六进制，大小写等价</li>
+<li>非ASCII字符：先UTF-8编码，再US-ASCII编码</li>
+<li>URI合法字符，编码和不编码是等价的</li>
+</ul>
+<h2 id="HTTP请求行和响应行"><a href="#HTTP请求行和响应行" class="headerlink" title="HTTP请求行和响应行"></a>HTTP请求行和响应行</h2><p><strong>请求行</strong></p>
+<p>request-line = method SP request-target SP HTTP-version CRLF</p>
+<ul>
+<li>method: 请求方法</li>
+<li>request-target: origin-form / absolute-form / authority-form / asterisk-form<ul>
+<li>origin-form = absolute-path [“?” query]<ul>
+<li>向origin server发起的请求，path为空时必须传递<code>/</code></li>
+</ul>
+</li>
+<li>absolute-form = absolute-URI<ul>
+<li>仅用于向正向代理proxy发起请求时</li>
+</ul>
+</li>
+<li>authority-form = authority<ul>
+<li>仅用于CONNECT方法，如<code>CONNECT www.wxample.com:80 HTTP/1.1</code></li>
+</ul>
+</li>
+<li>asterisk-form = “*”<ul>
+<li>仅用于OPTIONS方法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>HTTP-version: HTTP版本号</li>
+</ul>
+<p><strong>请求方法</strong></p>
+<ul>
+<li>GET<ul>
+<li>主要获取信息的方法，幂等</li>
+</ul>
+</li>
+<li>HEAD<ul>
+<li>获取元数据，可认为是不返回BODY的GET方法，幂等</li>
+</ul>
+</li>
+<li>POST<ul>
+<li>常用于提交表单等向服务器发送数据，新增资源</li>
+</ul>
+</li>
+<li>PUT<ul>
+<li>更新资源</li>
+</ul>
+</li>
+<li>DELETE<ul>
+<li>删除资源</li>
+</ul>
+</li>
+<li>CONNECT<ul>
+<li>建立tunnel隧道</li>
+</ul>
+</li>
+<li>OPTIONS：<ul>
+<li>显示服务器访问资源时支持的方法，幂等</li>
+</ul>
+</li>
+<li>TRACE<ul>
+<li>追踪服务器收到的请求，用于定位问题，存在安全风险。</li>
+</ul>
+</li>
+</ul>
+<p><strong>响应行</strong></p>
+<p>status-line = HTTP-version SP status-code SP reason-phrase CRLF</p>
+<ul>
+<li>status-code = 3DIGIT</li>
+<li>reason-phrase = *(HTAB / SP / VCHAR / obs-text)</li>
+</ul>
+<p><strong>响应码</strong></p>
+<ul>
+<li>响应码规范： RFC6585(2012.4), RFC7231(2014.6)</li>
+<li>1xx: 已收到请求，需要进一步处理才能完成，HTTP1.0不支持<ul>
+<li>100 Continue: 上传大文件前使用<ul>
+<li>由客户端发起请求中携带<code>Expect: 100-continue</code>头部触发</li>
+</ul>
+</li>
+<li>101 Switch Protocols: 升级协议时使用<ul>
+<li>由客户端发起请求中携带<code>Upgrade</code>头部触发，如升级websocket或者HTTP/2.0</li>
+</ul>
+</li>
+<li>102 Processing: WebDAV请求可能包含许多设计文件操作的之请求，需要长时间完成请求。该响应码表示服务器以及收到并正在处理请求，但无响应可用。这样可以防止客户端超时</li>
+</ul>
+</li>
+<li>2xx: 成功处理请求<ul>
+<li>200 OK： 成功返回</li>
+<li>201 Created: 有新资源在服务端被成功创建</li>
+<li>202 Accepted: 服务器接受并开始处理请求，但请求未处理完成，如异步，需要长时间处理的任务等</li>
+<li>203 Non-Authoritative Information: 但代理服务器修改了<code>origin server</code>的原始响应包体时，代理服务器可以通过修改200为203来告知客户端这一事情，方便客户端作出进一步处理。203可以被缓存。</li>
+<li>204 No Content: 成功执行了请求且不携带响应包体，暗示客户端无需更新当前的页面</li>
+<li>205 Reset Content: 成功执行了请求并且不携带响应包体，指明客户端需要更新当前页面视图</li>
+<li>206 Partial Coneten: 使用range协议时返回部分响应内容时的响应码</li>
+<li>207 Multi-Status: RFC4918, 在WebDAV协议中以XML返回多个资源的状态</li>
+<li>208 Already Reported: RFC5842, 为避免相同集合下资源在207响应码下重复上报，使用208可以使用父集合的响应码</li>
+</ul>
+</li>
+<li>3xx: 重定向。在RFC2068中规定客户端重定向次数不应超过5次，以防止死循环<ul>
+<li>300 Multiple Choices: 资源有多种表述，客户端受到后自行选择使用哪一种表述。很少使用</li>
+<li>301 Moved Permanently: 资源永久性重定向到另一个URI中</li>
+<li>302 Found: 资源临时重定向到另一个URI中</li>
+<li>303 See Other: 重定向到其他资源，常用于POST/PUT等方法的响应中</li>
+<li>304 Not Modified: 但客户端拥有可能过期的缓存时，会携带缓存的标识etag，时间等询问服务器缓存时候仍可以使用。304是告诉客户端可以使用。</li>
+<li>307 Temporary Redirect： 类似302，但名求重定向后的请求方法必须与原请求方法相同。</li>
+<li>308 Permanent Redirect: 类似301，但名求重定向后的请求方法必须与原请求方法相同。</li>
+</ul>
+</li>
+<li>4xx: 客户端错误<ul>
+<li>400 Bad Request: 服务器认为客户端出现错误，但不能明确判断是哪种错误。</li>
+<li>401 Unauthorized: 认证信息缺失或不正确</li>
+<li>403 Forbidden: 服务器理解请求含义，但客户端没有权限执行此请求</li>
+<li>404 Not Found: 服务器没有找到响应的资源</li>
+<li>405 Method Not Allowed: 服务器不支持method方法</li>
+<li>406 Not Acceptable: 对客户端制定的资源表述不存在，如对语言或者编码有要求，服务器返回表述列表供客户端参考</li>
+<li>407 Proxy Authentication Required: 对需要经过代理的请求，认证信息未通过代理服务器的验证</li>
+<li>408 Request Timeout: 请求超时</li>
+<li>409 Coflic: 资源冲突</li>
+<li>410 Gone: 服务器没有找到对应的资源，并且明确的知道该位置永久性找不到该资源</li>
+<li>411 Length Required: 如果请求包含包体且未携带Content-Lenght头部，且不属于chunk类请求，返回411</li>
+<li>413 Payload Too Large/Request Entity Too Large: 请求包体超出服务器能处理的最大长度</li>
+<li>414 URI Too Long: 请求URI超出服务器能接受的最大长度</li>
+<li>415 Unsupported Media Type: 上传的文件类型不被服务器支持</li>
+<li>416 Range No Satisfiable: 无法提供Range请求中指定的那段包体</li>
+<li>421 Misdirected Request: 服务器认为这个请求不应该发给自己，服务器没有能力处理这个请求</li>
+<li>426 Upgrade Required: 服务器拒绝基于当前HTTP协议提供服务，通过Upgrade头部告知客户端必须升级协议才能继续处理</li>
+<li>429 Too Many Requests: 客户端发送请求速率过快</li>
+<li>431 Request Header Fields Too Large: 请求的HEADER头部超过限制</li>
+<li>451 Unavailable For Legal Reasons: RFC7725, 由于法律原因资源不可访问</li>
+</ul>
+</li>
+<li>5xx: 服务端出现错误<ul>
+<li>500 Internal Server Error: 服务器内部错误，且不属于以下错误类型</li>
+<li>501 Not Implemented: 服务器不支持实现请求所需要的功能</li>
+<li>502 Bad Gateway: 代理服务器无法获取到合法响应</li>
+<li>503 Service Unavailable: 服务器资源尚未准备好处理当前请求</li>
+<li>504 Getewag Timeout: 代理服务器从上游获取请求超时</li>
+<li>505 HTTP Version Not Supported: 请求使用的HTTP协议版本不支持</li>
+<li>507 Insufficient Storage: 服务器没有足够的空间处理请求</li>
+<li>508 Loop Detected: 访问资源时检测到循环</li>
+<li>511 NetWork Authentication Required: 代理服务器发现客户端需要进行身份验证才能获取网络访问权限</li>
+</ul>
+</li>
+</ul>
+<h2 id="长连接和短连接"><a href="#长连接和短连接" class="headerlink" title="长连接和短连接"></a>长连接和短连接</h2><p>Connection头部</p>
+<ul>
+<li>Keep-Alive: 长链接<ul>
+<li>客户端请求长链接<ul>
+<li>Connection: Keep-Alive</li>
+</ul>
+</li>
+<li>服务器表示支持长链接<ul>
+<li>Connection: Keep-Alive</li>
+</ul>
+</li>
+<li>HTTP/1.1默认使用长链接</li>
+</ul>
+</li>
+<li>Close: 短链接</li>
+</ul>
+<p>此规则仅仅表示客户端与直接相连的服务器之间建立长链接，如果中间存在代理，则有可能代理与代理，代理与最终服务器直接不是长链接，需要另作处理</p>
+<p>Proxy-Connection解决老旧代理无法处理Keep-Alive的情况</p>
+<hr>
+<p>未完待续！</p>
+<hr>
+<blockquote>
+<p>参考</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/understanding-restful-style">理解本真的 REST 架构风格</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%A6%82%E5%BF%B5/" rel="tag"># 概念</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+              <a href="/tags/HTTP/" rel="tag"># HTTP</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/12/MIT-6-824-%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F3-%E8%AF%91%E6%96%87-The-Google-File-System/" rel="prev" title="[MIT-6.824-分布式系统3]译文 The Google File System">
+      <i class="fa fa-chevron-left"></i> [MIT-6.824-分布式系统3]译文 The Google File System
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/19/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95-%E4%B8%80%E4%B8%AA%E9%A1%BA%E5%BA%8F%E8%A1%A8%E5%AE%9E%E7%8E%B0/" rel="next" title="数据结构与算法-一个顺序表实现">
+      数据结构与算法-一个顺序表实现 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E6%98%AF%E6%80%8E%E4%B9%88%E5%8F%91%E8%B5%B7HTTP%E8%AF%B7%E6%B1%82%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">浏览器是怎么发起HTTP请求的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP%E6%B6%88%E6%81%AF%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">HTTP消息格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%88%AC%E8%A1%A8%E8%BE%BE"><span class="nav-number">2.1.</span> <span class="nav-text">一般表达</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ABNF%E8%A1%A8%E8%BE%BE-%E6%89%A9%E5%85%85%E5%B7%B4%E7%A7%91%E6%96%AF-%E7%91%99%E5%B0%94%E8%8C%83%E5%BC%8F"><span class="nav-number">2.2.</span> <span class="nav-text">ABNF表达(扩充巴科斯-瑙尔范式)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP-IP%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">TCP&#x2F;IP模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-web%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="nav-number">4.</span> <span class="nav-text">HTTP web架构设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0Web%E6%9E%B6%E6%9E%84%E7%9A%84%E5%85%B3%E9%94%AE%E5%B1%9E%E6%80%A7"><span class="nav-number">4.1.</span> <span class="nav-text">评估Web架构的关键属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0Web%E6%9E%B6%E6%9E%84%E6%80%A7%E8%83%BD%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">4.2.</span> <span class="nav-text">评估Web架构性能的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REST-%E6%9E%B6%E6%9E%84"><span class="nav-number">4.3.</span> <span class="nav-text">REST 架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%94%E7%A7%8D%E6%9E%B6%E6%9E%84%E9%A3%8E%E6%A0%BC"><span class="nav-number">4.3.1.</span> <span class="nav-text">五种架构风格</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#URI"><span class="nav-number">5.</span> <span class="nav-text">URI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Uniform-Resource-Identifier-%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E6%A0%87%E8%AF%86%E7%AC%A6"><span class="nav-number">5.1.</span> <span class="nav-text">Uniform Resource Identifier 统一资源标识符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#URI%E7%BB%84%E6%88%90"><span class="nav-number">5.2.</span> <span class="nav-text">URI组成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#URI%E7%9A%84ABNF%E8%A1%A8%E8%BE%BE"><span class="nav-number">5.3.</span> <span class="nav-text">URI的ABNF表达</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#URI%E7%BC%96%E7%A0%81"><span class="nav-number">5.4.</span> <span class="nav-text">URI编码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP%E8%AF%B7%E6%B1%82%E8%A1%8C%E5%92%8C%E5%93%8D%E5%BA%94%E8%A1%8C"><span class="nav-number">6.</span> <span class="nav-text">HTTP请求行和响应行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%9F%AD%E8%BF%9E%E6%8E%A5"><span class="nav-number">7.</span> <span class="nav-text">长连接和短连接</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Xavier</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Xavier</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

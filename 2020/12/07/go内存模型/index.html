@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"xavierx.cn","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="The Go Memory Model - The Go Programming Language The Go Memory ModelGo 内存模型Introduction简介The Go memory model specifies the conditions under which reads of a variable in one goroutine can be guarantee">
+<meta property="og:type" content="article">
+<meta property="og:title" content="译文-go内存模型">
+<meta property="og:url" content="https://xavierx.cn/2020/12/07/go%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:site_name" content="Xavier&#39;s Blog">
+<meta property="og:description" content="The Go Memory Model - The Go Programming Language The Go Memory ModelGo 内存模型Introduction简介The Go memory model specifies the conditions under which reads of a variable in one goroutine can be guarantee">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-12-07T12:49:37.000Z">
+<meta property="article:modified_time" content="2021-07-16T03:35:26.994Z">
+<meta property="article:author" content="Xavier">
+<meta property="article:tag" content="译文">
+<meta property="article:tag" content="go">
+<meta property="article:tag" content="原理">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://xavierx.cn/2020/12/07/go%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>译文-go内存模型 | Xavier's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Xavier's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://xavierx.cn/2020/12/07/go%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Xavier">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Xavier's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          译文-go内存模型
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-12-07 20:49:37" itemprop="dateCreated datePublished" datetime="2020-12-07T20:49:37+08:00">2020-12-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-16 11:35:26" itemprop="dateModified" datetime="2021-07-16T11:35:26+08:00">2021-07-16</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a target="_blank" rel="noopener" href="https://golang.org/ref/mem">The Go Memory Model - The Go Programming Language</a></p>
+<h1 id="The-Go-Memory-Model"><a href="#The-Go-Memory-Model" class="headerlink" title="The Go Memory Model"></a>The Go Memory Model</h1><h1 id="Go-内存模型"><a href="#Go-内存模型" class="headerlink" title="Go 内存模型"></a>Go 内存模型</h1><h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>The Go memory model specifies the conditions under which reads of a variable in one goroutine can be guaranteed to observe values produced by writes to the same variable in a different goroutine.</p>
+<p>Go内存模型规定了在什么条件下，可以保证对一个goroutine中在读操作时可以观察到另一个goroutine对同一变量的写操作的值。</p>
+<h2 id="Advice"><a href="#Advice" class="headerlink" title="Advice"></a>Advice</h2><h2 id="建议"><a href="#建议" class="headerlink" title="建议"></a>建议</h2><p>Programs that modify data being simultaneously accessed by multiple goroutines must serialize such access.</p>
+<p>To serialize access, protect the data with channel operations or other synchronization primitives such as those in the sync and sync/atomic packages.</p>
+<p>If you must read the rest of this document to understand the behavior of your program, you are being too clever.</p>
+<p>Don’t be clever.</p>
+<p>修改被多个goroutine同时访问的数据的时必须有序。</p>
+<p>要有序访问，请使用channel操作或其他同步元语（如sync和sync/atomic）来保护数据。</p>
+<p>请务必通过阅读该文章来理解你程序的行为。</p>
+<p>不要自作聪明。</p>
+<h2 id="Happens-Before"><a href="#Happens-Before" class="headerlink" title="Happens Before"></a>Happens Before</h2><h2 id="Happens-Before-1"><a href="#Happens-Before-1" class="headerlink" title="Happens Before"></a>Happens Before</h2><p>Within a single goroutine, reads and writes must behave as if they executed in the order specified by the program. That is, compilers and processors may reorder the reads and writes executed within a single goroutine only when the reordering does not change the behavior within that goroutine as defined by the language specification. Because of this reordering, the execution order observed by one goroutine may differ from the order perceived by another. For example, if one goroutine executes a = 1; b = 2;, another might observe the updated value of b before the updated value of a.</p>
+<p>在一个goroutine内，读写必须按照程序指定的顺序执行。也就是说，编译器和处理器只有在重排时不会改变语言规范所定义的goroutine内的行为时，才可以对单个goroutine内执行的读和写进行重排。由于这种重排，一个goroutine观察到的执行顺序可能与另一个goroutine感知到的顺序不同。例如，如果一个goroutine执行a=1；b=2；，另一个goroutine可能会在a的更新值之前观察到b的更新值。</p>
+<p>To specify the requirements of reads and writes, we define <em>happens before</em>, a partial order on the execution of memory operations in a Go program. If event e1 happens before event e2, then we say that e2 happens after e1. Also, if e1 does not happen before e2 and does not happen after e2, then we say that e1 and e2 happen concurrently.</p>
+<p>为了明确读写的要求，我们定义了<em>happens before</em>，即Go程序中内存操作执行的局部顺序。如果事件e1发生在事件e2之前，那么我们说<em>e2 happens after e1</em>。另外，如果e1没有发生在e2之前，也没有发生在e2之后，那么我们说<em>e1 and e2 happen concurrently</em>。</p>
+<p><em>Within a single goroutine, the happens-before order is the order expressed by the program.</em></p>
+<p><em>在单个goroutine中，happens before的顺序是程序所表达的顺序。</em></p>
+<p>A read <em>r</em> of a variable v is <em>allowed</em> to observe a write <em>w</em> to v if both of the following hold:<br>    1. <em>r</em> does not happen before <em>w</em>.<br>    2. There is no other write <em>w’</em> to v that happens after <em>w</em> but before <em>r</em>.</p>
+<p>一个变量v的读<em>r</em>如果以下两个条件都成立，则<em>允许</em>观察v的写<em>w</em>。<br>    1. <em>r</em>不发生在<em>w</em>之前。<br>    2. 在<em>w</em>之后而在<em>r</em>之前没有其他对v的写*w’*。</p>
+<p>To guarantee that a read <em>r</em> of a variable v observes a particular write <em>w</em> to v, ensure that <em>w</em> is the only write <em>r</em> is allowed to observe. That is, <em>r</em> is <em>guaranteed</em> to observe <em>w</em> if both of the following hold:<br>    1. <em>w</em> happens before <em>r</em>.<br>    2. Any other write to the shared variable v either happens before <em>w</em> or after <em>r</em>.</p>
+<p>为了保证变量v的读<em>r</em>观察到对v的特定写<em>w</em>，保证<em>w</em>是唯一允许<em>r</em>观察的写。也就是说，如果以下两个条件都成立，则<em>r</em>被保证观察到<em>w</em>。<br>    1. <em>w</em>发生在<em>r</em>之前。<br>    2. 任何其他对共享变量v的写要么发生在<em>w</em>之前，要么发生在<em>r</em>之后。</p>
+<p>This pair of conditions is stronger than the first pair; it requires that there are no other writes happening concurrently with <em>w</em> or <em>r</em>.</p>
+<p>这对条件比第一对条件更强，它要求没有其他操作与w或r同时发生。</p>
+<p>Within a single goroutine, there is no concurrency, so the two definitions are equivalent: a read <em>r</em> observes the value written by the most recent write <em>w</em> to v. When multiple goroutines access a shared variable v, they must use synchronization events to establish <em>happens-before</em> conditions that ensure reads observe the desired writes.</p>
+<p>在单个goroutine内，不存在并发性，所以这两个定义是等价的：读r观察最近一次向v写入的w所写的值。当多个goroutine访问一个共享变量v时，它们必须使用同步事件来建立<em>happens-before</em>条件，以确保读观察到所需的写。</p>
+<p>The initialization of variable v with the zero value for v’s type behaves as a write in the memory model.</p>
+<p>变量v的初始化，v的类型为零值，在内存模型中表现为写。</p>
+<p>Reads and writes of values larger than a single machine word behave as multiple machine-word-sized operations in an unspecified order.</p>
+<p>对大于一个机器字的值的读写，将以一个未指定的顺序进行多个机器字大小的操作。</p>
+<h2 id="Synchronization"><a href="#Synchronization" class="headerlink" title="Synchronization"></a>Synchronization</h2><h2 id="同步化"><a href="#同步化" class="headerlink" title="同步化"></a>同步化</h2><h3 id="Initialization"><a href="#Initialization" class="headerlink" title="Initialization"></a>Initialization</h3><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>Program initialization runs in a single goroutine, but that goroutine may create other goroutines, which run concurrently.</p>
+<p>程序初始化在一个goroutine中运行，但该goroutine可以创建其他goroutine，这些goroutine同时运行。</p>
+<p><em>If a package<strong>p</strong>imports package<strong>q</strong>, the completion of<strong>q</strong>’s<strong>init</strong>functions happens before the start of any of<strong>p</strong>’s.</em></p>
+<p>如果一个包p导入了包q，那么q的init函数的完成就发生在p的任何一个函数开始之前。</p>
+<p><em>The start of the function<strong>main.main</strong>happens after all<strong>init</strong>functions have finished.</em></p>
+<p>函数main.main的启动发生在所有init函数完成之后。</p>
+<h3 id="Goroutine-creation"><a href="#Goroutine-creation" class="headerlink" title="Goroutine creation"></a>Goroutine creation</h3><h3 id="Goroutine的创建"><a href="#Goroutine的创建" class="headerlink" title="Goroutine的创建"></a>Goroutine的创建</h3><p><em>The<strong>go</strong>statement that starts a new goroutine happens before the goroutine’s execution begins.</em></p>
+<p>启动一个新的goroutine的go语句发生在goroutine的执行开始之前。</p>
+<p>For example, in this program:</p>
+<p>例如，在这个程序中：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">hello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>calling hello will print “hello, world” at some point in the future (perhaps after hello has returned).</p>
+<p>调用hello将在未来的某个时刻打印 “hello，world”（也许在hello返回后）。</p>
+<h3 id="Goroutine-destruction"><a href="#Goroutine-destruction" class="headerlink" title="Goroutine destruction"></a>Goroutine destruction</h3><h3 id="Goroutine的销毁"><a href="#Goroutine的销毁" class="headerlink" title="Goroutine的销毁"></a>Goroutine的销毁</h3><p>The exit of a goroutine is not guaranteed to happen before any event in the program. For example, in this program:</p>
+<p>goroutine的退出不保证在程序中的任何事件之前发生。例如，在这个程序中：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">hello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; a = <span class="string">&quot;hello&quot;</span> &#125;()</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>the assignment to a is not followed by any synchronization event, so it is not guaranteed to be observed by any other goroutine. In fact, an aggressive compiler might delete the entire go statement.</p>
+<p>a的赋值之后没有任何同步事件，所以不能保证它被其他goroutine观察到。事实上，一个激进的编译器可能会删除整个go语句。</p>
+<p>If the effects of a goroutine must be observed by another goroutine, use a synchronization mechanism such as a lock or channel communication to establish a relative ordering.</p>
+<p>如果一个goroutine的效果必须由另一个goroutine观察，则使用锁或通道通信等同步机制来建立相对的排序。</p>
+<h3 id="Channel-communication"><a href="#Channel-communication" class="headerlink" title="Channel communication"></a>Channel communication</h3><h3 id="使用channel通信"><a href="#使用channel通信" class="headerlink" title="使用channel通信"></a>使用channel通信</h3><p>Channel communication is the main method of synchronization between goroutines. Each send on a particular channel is matched to a corresponding receive from that channel, usually in a different goroutine.</p>
+<p>channel是goroutine之间同步的主要方法。在某一特定channel上的每一次发送都与来自该channel的相应接收相匹配，通常在不同的goroutine中进行。</p>
+<p><em>A send on a channel happens before the corresponding receive from that channel completes.</em></p>
+<p>在一个通道上的发送发生在该通道相应的接收完成之前。</p>
+<p>This program:</p>
+<p>举例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> c = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	c &lt;- <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	&lt;-c</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>is guaranteed to print “hello, world”. The write to a happens before the send on c, which happens before the corresponding receive on c completes, which happens before the print.</p>
+<p>该程序是保证打印 “hello, world “的。对a的写入发生在c上的send之前，send发生在c上相应的receive完成之前，receive发生在print之前。</p>
+<p><em>The closing of a channel happens before a receive that returns a zero value because the channel is closed.</em></p>
+<p>channel的关闭发生在返回零值的接收之前，因为channel已经关闭。</p>
+<p>In the previous example, replacing c &lt;- 0 with close(c) yields a program with the same guaranteed behavior.</p>
+<p>在前面的例子中，用close(c)代替c &lt;- 0，可以得到一个具有相同保证行为的程序。</p>
+<p><em>A receive from an unbuffered channel happens before the send on that channel completes.</em></p>
+<p>从一个非缓冲channel的接收发生在该channel的发送完成之前。</p>
+<p>This program (as above, but with the send and receive statements swapped and using an unbuffered channel):</p>
+<p>这个程序(和上面一样，但发送和接收语句互换，并使用一个非缓冲channel)：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> c = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	&lt;-c</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	c &lt;- <span class="number">0</span></span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>is also guaranteed to print “hello, world”. The write to a happens before the receive on c, which happens before the corresponding send on c completes, which happens before the print.</p>
+<p>也保证打印 “hello, world”。写入a的过程发生在receive c之前，而receive发生在c上相应的send完成之前，而send完成在print之前。</p>
+<p>If the channel were buffered (e.g., c = make(chan int, 1)) then the program would not be guaranteed to print “hello, world”. (It might print the empty string, crash, or do something else.)</p>
+<p>如果是带缓冲的channel（例如，c = make(chan int, 1)），那么程序就不能保证打印 “hello, world”。(它可能会打印空字符串，崩溃，或者做其他事情。)</p>
+<p><em>The kth receive on a channel with capacity C happens before the k+Cth send from that channel completes.</em></p>
+<p>在容量为C的channel上的第k次接收发生在该信道的第k+C次发送完成之前。</p>
+<p>This rule generalizes the previous rule to buffered channels. It allows a counting semaphore to be modeled by a buffered channel: the number of items in the channel corresponds to the number of active uses, the capacity of the channel corresponds to the maximum number of simultaneous uses, sending an item acquires the semaphore, and receiving an item releases the semaphore. This is a common idiom for limiting concurrency.</p>
+<p>这条规则将前一条规则概括为缓冲channel。它允许用缓冲channel来模拟计数标记：channel中的项数对应于有效使用的次数，通道的容量对应于最大的同时使用次数，发送一个项获得标记，接收一个项释放标记。这是限制并发量的常用写法。</p>
+<p>This program starts a goroutine for every entry in the work list, but the goroutines coordinate using the limit channel to ensure that at most three are running work functions at a time.</p>
+<p>该程序为工作列表中的每一个条目启动一个goroutine，但goroutine使用刚刚好容量channel进行协调，以保证一次最多运行三个工作函数。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> limit = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> work &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(w <span class="keyword">func</span>()</span>)</span> &#123;</span><br><span class="line">			limit &lt;- <span class="number">1</span></span><br><span class="line">			w()</span><br><span class="line">			&lt;-limit</span><br><span class="line">		&#125;(w)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">select</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Locks"><a href="#Locks" class="headerlink" title="Locks"></a>Locks</h3><h3 id="Locks-1"><a href="#Locks-1" class="headerlink" title="Locks"></a>Locks</h3><p>The sync package implements two lock data types, sync.Mutex and sync.RWMutex.</p>
+<p>sync包实现了两种锁数据类型，sync.Mutex和sync.RWMutex。</p>
+<p><em>For any<strong>sync.Mutex</strong>or<strong>sync.RWMutex</strong>variable<strong>l</strong>and n &lt; m, call n of<strong>l.Unlock()**happens before call m of</strong>l.Lock()**returns.</em></p>
+<p>对于任何sync.Mutex或sync.RWMutex变量l且n&lt;m，l.Unlock()的调用n发生在l.Lock()的调用m返回之前。</p>
+<p>This program:<br>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> l sync.Mutex</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	l.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	l.Lock()</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	l.Lock()</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>is guaranteed to print “hello, world”. The first call to l.Unlock() (in f) happens before the second call to l.Lock() (in main) returns, which happens before the print.</p>
+<p>是保证打印 “hello, world “的。第一次调用l.Unlock()(在f中)发生在第二次调用l.Lock()(在main中)返回之前，而第二次调用发生在打印之前。</p>
+<p><em>For any call to<strong>l.RLock</strong>on a<strong>sync.RWMutex</strong>variable<strong>l</strong>, there is an n such that the<strong>l.RLock</strong>happens (returns) after call n to<strong>l.Unlock</strong>and the matching<strong>l.RUnlock</strong>happens before call n+1 to<strong>l.Lock</strong>.</em></p>
+<p>对于sync.RWMutex变量l上的任何对l.RLock的调用，有一个n，使得l.RLock发生在对l.Unlock的调用n之后（返回），而与之匹配的l.RUnlock发生在对l.Lock的调用n+1之前。</p>
+<h3 id="Once"><a href="#Once" class="headerlink" title="Once"></a>Once</h3><h3 id="Once-1"><a href="#Once-1" class="headerlink" title="Once"></a>Once</h3><p>The sync package provides a safe mechanism for initialization in the presence of multiple goroutines through the use of the Once type. Multiple threads can execute once.Do(f) for a particular f, but only one will run f(), and the other calls block until f() has returned.</p>
+<p>sync包通过使用Once类型为多个goroutine存在时的初始化提供了一个安全机制。多个线程可以对某个f执行一次.Do(f)，但只有一个线程会运行f()，其他线程调用阻塞，直到f()返回。</p>
+<p><em>A single call of<strong>f()**from</strong>once.Do(f)<strong>happens (returns) before any call of</strong>once.Do(f)**returns.</em></p>
+<p>从 once.Do(f)的单次调用f()，在任何一次调用 once.Do(f)返回之前发生（返回）。</p>
+<p>In this program:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> once sync.Once</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	once.Do(setup)</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">twoprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>calling twoprint will call setup exactly once. The setup function will complete before either call of print. The result will be that “hello, world” will be printed twice.</p>
+<p>调用twoprint会调用setup一次。设置函数将在两次调用print之前完成。结果是 “hello, world “将被打印两次。</p>
+<h3 id="Incorrect-synchronization"><a href="#Incorrect-synchronization" class="headerlink" title="Incorrect synchronization"></a>Incorrect synchronization</h3><h3 id="不正确的同步化"><a href="#不正确的同步化" class="headerlink" title="不正确的同步化"></a>不正确的同步化</h3><p>Note that a read <em>r</em> may observe the value written by a write <em>w</em> that happens concurrently with <em>r</em>. Even if this occurs, it does not imply that reads happening after <em>r</em> will observe writes that happened before <em>w</em>.</p>
+<p>请注意，读r可能会观察到与r同时发生的写w所写的值。即使出现这种情况，也不意味着r之后发生的读会观察到w之前发生的写。</p>
+<p>In this program:</p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a, b <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="number">1</span></span><br><span class="line">	b = <span class="number">2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">g</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="built_in">print</span>(b)</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	g()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>it can happen that g prints 2 and then 0.</p>
+<p>有可能发生g打印2，然后打印0的情况。</p>
+<p>This fact invalidates a few common idioms.</p>
+<p>这一事实使一些常见的写法失效。</p>
+<p>Double-checked locking is an attempt to avoid the overhead of synchronization. For example, the twoprint program might be incorrectly written as:</p>
+<p>Double-checked是为了避免同步的开销。例如，twoprint程序可能会被错误地写成: </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> done <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	done = <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> !done &#123;</span><br><span class="line">		once.Do(setup)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">twoprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>but there is no guarantee that, in doprint, observing the write to done implies observing the write to a. This version can (incorrectly) print an empty string instead of “hello, world”.</p>
+<p>但不能保证在doprint中，观察写到done就意味着观察写到a，这个版本会错误地打印一个空字符串，而不是 “hello, world”。</p>
+<p>Another incorrect idiom is busy waiting for a value, as in:</p>
+<p>另一个不正确的写法是忙着等值，如:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> done <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	done = <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> setup()</span><br><span class="line">	<span class="keyword">for</span> !done &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>As before, there is no guarantee that, in main, observing the write to done implies observing the write to a, so this program could print an empty string too. Worse, there is no guarantee that the write to done will ever be observed by main, since there are no synchronization events between the two threads. The loop in main is not guaranteed to finish.</p>
+<p>和之前一样，不能保证在main中，观察写到done的情况就意味着观察写到a的情况，所以这个程序也会打印一个空字符串。更糟糕的是，不能保证写到done的过程会被main观察到，因为两个线程之间没有同步事件。main中的循环不能保证完成。</p>
+<p>There are subtler variants on this theme, such as this program.</p>
+<p>这个程序还有更巧妙的变体，比如这个程序。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">	msg <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g *T</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	t := <span class="built_in">new</span>(T)</span><br><span class="line">	t.msg = <span class="string">&quot;hello, world&quot;</span></span><br><span class="line">	g = t</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> setup()</span><br><span class="line">	<span class="keyword">for</span> g == <span class="literal">nil</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">print</span>(g.msg)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Even if main observes g != nil and exits its loop, there is no guarantee that it will observe the initialized value for g.msg.</p>
+<p>即使main观察到g != nil并退出它的循环，也不能保证它会观察到g.msg的初始化值。</p>
+<p>In all these examples, the solution is the same: use explicit synchronization.</p>
+<p>在所有这些例子中，解决方案都是一样的：使用显式同步。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AF%91%E6%96%87/" rel="tag"># 译文</a>
+              <a href="/tags/go/" rel="tag"># go</a>
+              <a href="/tags/%E5%8E%9F%E7%90%86/" rel="tag"># 原理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/04/go-error/" rel="prev" title="go error">
+      <i class="fa fa-chevron-left"></i> go error
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/02/%E4%B8%80%E6%AC%A1%E9%AB%98%E5%B9%B6%E5%8F%91golang%20%60too%20mange%20open%20files%60%E6%8A%A5%E9%94%99debug%E8%BF%87%E7%A8%8B%E8%AE%B0%E5%BD%95/" rel="next" title="一次高并发golang [too mange open files] 报错debug过程记录">
+      一次高并发golang [too mange open files] 报错debug过程记录 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Go-Memory-Model"><span class="nav-number">1.</span> <span class="nav-text">The Go Memory Model</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Go-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">Go 内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">2.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">2.2.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Advice"><span class="nav-number">2.3.</span> <span class="nav-text">Advice</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E8%AE%AE"><span class="nav-number">2.4.</span> <span class="nav-text">建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Happens-Before"><span class="nav-number">2.5.</span> <span class="nav-text">Happens Before</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Happens-Before-1"><span class="nav-number">2.6.</span> <span class="nav-text">Happens Before</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronization"><span class="nav-number">2.7.</span> <span class="nav-text">Synchronization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E5%8C%96"><span class="nav-number">2.8.</span> <span class="nav-text">同步化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Initialization"><span class="nav-number">2.8.1.</span> <span class="nav-text">Initialization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B-1"><span class="nav-number">2.8.2.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Goroutine-creation"><span class="nav-number">2.8.3.</span> <span class="nav-text">Goroutine creation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Goroutine%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="nav-number">2.8.4.</span> <span class="nav-text">Goroutine的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Goroutine-destruction"><span class="nav-number">2.8.5.</span> <span class="nav-text">Goroutine destruction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Goroutine%E7%9A%84%E9%94%80%E6%AF%81"><span class="nav-number">2.8.6.</span> <span class="nav-text">Goroutine的销毁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Channel-communication"><span class="nav-number">2.8.7.</span> <span class="nav-text">Channel communication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8channel%E9%80%9A%E4%BF%A1"><span class="nav-number">2.8.8.</span> <span class="nav-text">使用channel通信</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Locks"><span class="nav-number">2.8.9.</span> <span class="nav-text">Locks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Locks-1"><span class="nav-number">2.8.10.</span> <span class="nav-text">Locks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Once"><span class="nav-number">2.8.11.</span> <span class="nav-text">Once</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Once-1"><span class="nav-number">2.8.12.</span> <span class="nav-text">Once</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Incorrect-synchronization"><span class="nav-number">2.8.13.</span> <span class="nav-text">Incorrect synchronization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8D%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%90%8C%E6%AD%A5%E5%8C%96"><span class="nav-number">2.8.14.</span> <span class="nav-text">不正确的同步化</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Xavier</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Xavier</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
